@@ -28,12 +28,16 @@ class EmbedPortletRender(BaseRenderer):
     """
 
     @property
-    @ram.cache(_available_cachekey)
     def available(self):
         if self.request.cookies.get('embed-optout') != 'true' and \
                 self.request.get_header('HTTP_DNT') != '1':
             return True
 
+        return self._content_available_check()
+
+    @ram.cache(_available_cachekey)
+    def _content_available_check(self):
+        # This only check HTML content, so can be cached
         text = self.data.text
         here_url = self.context.absolute_url()
         currentDomain = urlmatcher.match(here_url).groups()[0]
