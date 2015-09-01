@@ -1,4 +1,4 @@
-Extends `collective.portlet.embed`__ changing the portlet behavior.
+Extends `collective.portlet.embed`_ changing the portlet behavior.
 If an **opt-out** cookie (or a DNS header) is present and the portlet is rendering externas resources,
 do not render the portlet.
 
@@ -42,3 +42,5 @@ This product was developed by RedTurtle Technology team.
    :target: http://www.redturtle.it/
 
 .. _`collective.portlet.embed`: https://pypi.python.org/pypi/collective.portlet.embed
+.. _`Do Not Track`: https://en.wikipedia.org/wiki/Do_Not_Track
+
