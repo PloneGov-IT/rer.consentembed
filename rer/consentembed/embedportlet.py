@@ -12,12 +12,19 @@ DANGEROUS_EXPR = ("iframe[src],script[src],"
                   "video source[src],audio source[src],"
                   "image[src],link[src]")
 
-URL_PATTER = r"^[^a-zA-Z0-9]*(?:http://|https://)?([a-zA-Z0-9.:]+).*$"
+URL_PATTER = r"^[^a-zA-Z0-9]*(?:http://|https://)?([a-zA-Z0-9.:_\-]+).*$"
 urlmatcher = re.compile(URL_PATTER)
 
 
+def _subdomain_cachekey(method, self, domain):
+    return domain
+
 def _available_cachekey(method, self):
-    return self.data.text
+    # Cache is based onto portlet contents and subdomain used by users to access the site
+    here_url = self.context.absolute_url()
+    currentDomain = urlmatcher.match(here_url).groups()[0]
+    currentSubDomain = self._get_subdomain(currentDomain)
+    return (self.data.text, currentSubDomain)
 
 
 class EmbedPortletRender(BaseRenderer):
@@ -35,12 +42,35 @@ class EmbedPortletRender(BaseRenderer):
 
         return self._content_available_check()
 
+    @ram.cache(_subdomain_cachekey)
+    def _get_subdomain(self, domain):
+        """
+        aaa.bbb.com -> bbb.com
+        aaa.bbb.ccc.com -> bbb.com
+        aaa.com -> aaa.com
+        aaa -> aaa
+        ip addr -> ip addr
+        """
+        # aaa
+        if domain.find(".")==-1:
+            return domain
+        parts = domain.split('.')
+        # ip addr
+        if len([x for x in parts if x.isdigit()]) == len(parts):
+            return domain
+        # aaa.com 
+        if len(parts)<=2:
+            return domain
+        # other
+        return '.'.join(parts[-2:])
+
     @ram.cache(_available_cachekey)
     def _content_available_check(self):
         # This only check HTML content, so can be cached
         text = self.data.text
         here_url = self.context.absolute_url()
         currentDomain = urlmatcher.match(here_url).groups()[0]
+        currentSubDomain = self._get_subdomain(currentDomain)
         
         try:
             pq = PQ(text)
@@ -55,6 +85,6 @@ class EmbedPortletRender(BaseRenderer):
             if not remoteMatch:
                 # not an URL, maybe not dangerous?
                 continue
-            if currentDomain!=remoteMatch.groups()[0]:
+            if remoteMatch.groups()[0].find(currentSubDomain)==-1:
                 return False
         return True
