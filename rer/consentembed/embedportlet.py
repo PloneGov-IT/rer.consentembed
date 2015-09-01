@@ -4,6 +4,7 @@ import re
 from collective.portlet.embed.portlet import Renderer as BaseRenderer
 from pyquery import PyQuery as PQ
 from rer.consentembed import logger
+from plone.memoize import ram
 
 
 DANGEROUS_EXPR = ("iframe[src],script[src],"
@@ -15,6 +16,10 @@ URL_PATTER = r"^[^a-zA-Z0-9]*(?:http://|https://)?([a-zA-Z0-9.:]+).*$"
 urlmatcher = re.compile(URL_PATTER)
 
 
+def _available_cachekey(method, self):
+    return self.data.text
+
+
 class EmbedPortletRender(BaseRenderer):
     """Check if the portlet is trying to load data from external.
 
@@ -23,6 +28,7 @@ class EmbedPortletRender(BaseRenderer):
     """
 
     @property
+    @ram.cache(_available_cachekey)
     def available(self):
         if self.request.cookies.get('embed-optout') != 'true' and \
                 self.request.get_header('HTTP_DNT') != '1':
