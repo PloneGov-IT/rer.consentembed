@@ -14,7 +14,7 @@ if...
 ...the portlet content is parsed looking for potentially malicious contents.
 If contents that load external sites are found, the portlet will not be rendered.
 
-URLs in the same subdomain (aaa.bar.com that load from bbb.bar.com) are permitted.
+URLs in the same subdomain (aaa.bar.com that load from bbb.bar.com) are permitted and HTTP ports are ignored.
 
 Limitations
 ===========

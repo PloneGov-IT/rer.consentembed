@@ -54,6 +54,7 @@ class EmbedPortletRender(BaseRenderer):
         # aaa
         if domain.find(".")==-1:
             return domain
+        domain = domain.split(':')[0] # do not care about port
         parts = domain.split('.')
         # ip addr
         if len([x for x in parts if x.isdigit()]) == len(parts):
@@ -78,7 +79,7 @@ class EmbedPortletRender(BaseRenderer):
             logger.error('Cannot parse portlet contents')
             return False
 
-        items = pq.find(DANGEROUS_EXPR)
+        items = pq(DANGEROUS_EXPR)
         for element in items.items():
             to_check = element.attr('src') or element.attr('data')
             remoteMatch = urlmatcher.match(to_check)
