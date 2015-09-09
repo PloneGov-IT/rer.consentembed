@@ -36,9 +36,12 @@ class EmbedPortletRender(BaseRenderer):
 
     @property
     def available(self):
-        if self.request.cookies.get('embed-optout') != 'true' and \
-                self.request.get_header('HTTP_DNT') != '1':
-            return True
+        # If embed-optout is false we should ignore also the DNT header
+        if self.request.cookies.get('embed-optout') == 'false':
+            # cookie can still be != true (if missing)
+            if self.request.cookies.get('embed-optout') != 'true' and \
+                    self.request.get_header('HTTP_DNT') != '1':
+                return True
 
         return self._content_available_check()
 
